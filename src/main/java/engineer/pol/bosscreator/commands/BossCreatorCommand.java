@@ -3,6 +3,7 @@ package engineer.pol.bosscreator.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -20,20 +21,96 @@ import net.minecraft.text.Text;
 
 public class BossCreatorCommand {
 
-    private static String prefix = "§8[§3PolCinematics§8]§r ";
+    private static String prefix = "§8[§4BossCreator§8]§r ";
 
     private static String helpCommand = prefix + "§6List of commands: \n\n" +
-            "§6/polcinematics help §8- §Shows this message\n" +
-            "§6/polcinematics list §8- §Shows a list of all loaded cinematics\n" +
-            "";
+            "§6/bosses help §8- §7Shows this message\n" +
+            "§6/bosses list §8- §7Shows a list of all loaded templates\n" +
+            "§6/bosses create <name> §8- §7Creates a boss template\n" +
+            "§6/bosses remove <name> §8- §7Removes boss template\n" +
+            "§6/bosses save §8- §7Saves all changes made\n" +
+            "§6/bosses melee <name> <value> §8- §7Change damage made by boss\n" +
+            "§6/bosses bossbar <name> <color> §8- §7Change color of bossbar\n" +
+            "§6/bosses maxHealth <name> <value> §8- §7Change maxHealth of boss\n" +
+            "§6/bosses displayName <name> <displayName> §8- §7Change displayName\n" +
+            "§6/bosses start <name> <bossfightName> §8- §7Start/create a bossfight\n" +
+            "§6/bosses finish <bossfightName> §8- §7Stop a bossfight\n" +
+            "§6/bosses set <player> <bossfightName> §8- §7Sets a player\n" +
+            "§6/bosses unset <player> <bossfightName> §8- §7Unsets a player\n" +
+            "§6/bosses health <bossfightName> <value 0-100%> §8- §7Change boss health\n";
+
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
-        LiteralArgumentBuilder<ServerCommandSource> literalBuilder = CommandManager.literal("cinematic");
+        LiteralArgumentBuilder<ServerCommandSource> literalBuilder = CommandManager.literal("bosses");
 
         literalBuilder.executes(BossCreatorCommand::help);
         literalBuilder.then(CommandManager.literal("help").executes(BossCreatorCommand::help));
 
+        literalBuilder.then(CommandManager.literal("create").then(CommandManager.argument("name", StringArgumentType.word()).executes(BossCreatorCommand::create)));
+        literalBuilder.then(CommandManager.literal("remove").then(CommandManager.argument("name", StringArgumentType.word()).suggests(CommandSuggestions.BOSS_TEMPLATES).executes(BossCreatorCommand::remove)));
+        literalBuilder.then(CommandManager.literal("list").executes(BossCreatorCommand::list));
+        literalBuilder.then(CommandManager.literal("save").executes(BossCreatorCommand::save));
 
+        literalBuilder
+                .then(CommandManager.literal("melee")
+                        .then(CommandManager.argument("name", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_TEMPLATES)
+                                .then(CommandManager.argument("meleeDamage", IntegerArgumentType.integer(0))
+                                        .executes(BossCreatorCommand::setMelee))));
+
+        LiteralArgumentBuilder<ServerCommandSource> bossbarBuilder = literalBuilder
+                .then(CommandManager.literal("bossbar")
+                        .then(CommandManager.argument("name", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_TEMPLATES)));
+        BossBarUtils.getBossbarColors().forEach(color -> bossbarBuilder.then(CommandManager.literal(color).executes(context -> setBossbarColor(context, color))));
+
+        literalBuilder
+                .then(CommandManager.literal("maxHealth")
+                        .then(CommandManager.argument("name", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_TEMPLATES)
+                                .then(CommandManager.argument("maxHealth", IntegerArgumentType.integer(0))
+                                        .executes(BossCreatorCommand::setMaxHealth))));
+
+        literalBuilder
+                .then(CommandManager.literal("displayName")
+                        .then(CommandManager.argument("name", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_TEMPLATES)
+                                .then(CommandManager.argument("displayName",StringArgumentType.string())
+                                        .executes(BossCreatorCommand::setDisplayName))));
+
+        literalBuilder
+                .then(CommandManager.literal("start")
+                        .then(CommandManager.argument("name", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_TEMPLATES)
+                                .then(CommandManager.argument("bossfightName",StringArgumentType.word())
+                                        .executes(BossCreatorCommand::start))));
+
+        literalBuilder
+                .then(CommandManager.literal("finish")
+                        .then(CommandManager.argument("bossfightName", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_FIGHTS)
+                                .executes(BossCreatorCommand::finish)));
+
+        literalBuilder
+                .then(CommandManager.literal("set")
+                        .then(CommandManager.argument("bossfightName", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_FIGHTS)
+                                .then(CommandManager.argument("playerName", EntityArgumentType.player())
+                                        .executes(BossCreatorCommand::setPlayer))));
+
+        literalBuilder
+                .then(CommandManager.literal("unset")
+                        .then(CommandManager.argument("bossfightName", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_FIGHTS)
+                                .then(CommandManager.argument("playerName", EntityArgumentType.player())
+                                        .executes(BossCreatorCommand::unsetPlayer))));
+
+        literalBuilder
+                .then(CommandManager.literal("health")
+                        .then(CommandManager.argument("bossfightName", StringArgumentType.word())
+                                .suggests(CommandSuggestions.BOSS_FIGHTS)
+                                .then(CommandManager.argument("health", IntegerArgumentType.integer(0, 100))
+                                        .executes(BossCreatorCommand::setHealth))));
 
         dispatcher.register(literalBuilder);
     }
@@ -99,9 +176,9 @@ public class BossCreatorCommand {
         return 1;
     }
 
-    private static int setBossbarColor(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+    private static int setBossbarColor(CommandContext<ServerCommandSource> context, String color) throws CommandSyntaxException {
         String name = StringArgumentType.getString(context, "name");
-        BossBar.Color bossbarColor = BossBarUtils.getColorFromString(StringArgumentType.getString(context, "bossbarColor"));
+        BossBar.Color bossbarColor = BossBarUtils.getColorFromString(color);
 
         if (bossbarColor == null) {
             context.getSource().sendFeedback(Text.literal("Invalid bossbar color"), false);
@@ -201,6 +278,21 @@ public class BossCreatorCommand {
 
         bossFight.removeMorpedPlayer(player.getUuid());
         context.getSource().sendFeedback(Text.literal("Player unset"), false);
+        return 1;
+    }
+
+    private static int setHealth(CommandContext<ServerCommandSource> context) {
+        String bossfightName = StringArgumentType.getString(context, "bossfightName");
+        int health = IntegerArgumentType.getInteger(context, "health");
+        float percentage = (float) health/100;
+        BossFight bossFight = BossCreator.BOSS_MANAGER.getBossFight(bossfightName);
+        if (bossFight == null) {
+            context.getSource().sendFeedback(Text.literal("Bossfight not found"), false);
+            return 1;
+        }
+
+        bossFight.setHP(percentage);
+
         return 1;
     }
 

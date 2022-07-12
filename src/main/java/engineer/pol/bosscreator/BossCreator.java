@@ -5,6 +5,7 @@ import engineer.pol.bosscreator.core.BossManager;
 import engineer.pol.bosscreator.file.DataFile;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
@@ -18,11 +19,12 @@ public class BossCreator implements ModInitializer {
     @Override
     public void onInitialize() {
         CommandRegistrationCallback.EVENT.register(BossCreatorCommand::register);
-        ServerTickEvents.START_SERVER_TICK.register(server -> {
+        ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
             if (SERVER == null) {
                 SERVER = server;
             }
         });
+        ServerLifecycleEvents.SERVER_STOPPING.register((server) -> BOSS_MANAGER.save());
 
         DATA_FILE = new DataFile();
         BOSS_MANAGER = new BossManager();

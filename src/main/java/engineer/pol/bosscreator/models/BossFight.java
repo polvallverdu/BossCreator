@@ -54,11 +54,6 @@ public class BossFight {
         return healthPoints;
     }
 
-    public void setHealthPoints(int healthPoints) {
-        this.healthPoints = healthPoints;
-        update();
-    }
-
     public boolean isRunning() {
         return running;
     }
