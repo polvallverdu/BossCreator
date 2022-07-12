@@ -75,6 +75,9 @@ public class BossManager {
 
     private void load() {
         JsonObject json = BossCreator.DATA_FILE.load();
+        if (!json.has("bosses")) {
+            json.add("bosses", new JsonArray());
+        }
         json.get("bosses").getAsJsonArray().forEach(bossJson -> {
             BossTemplate template = BossTemplate.fromJson(bossJson.getAsJsonObject());
             this.bossTemplates.add(template);

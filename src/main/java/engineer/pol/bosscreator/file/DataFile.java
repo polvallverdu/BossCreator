@@ -9,12 +9,14 @@ import java.io.IOException;
 
 public class DataFile {
 
+    private final File dir;
     private final File file;
 
     public DataFile() {
+        this.dir = new File("./config/bosscreator");
         this.file = new File("./config/bosscreator/data.json");
 
-        this.file.mkdirs();
+        this.dir.mkdirs();
         try {
             this.file.createNewFile();
         } catch (IOException e) {

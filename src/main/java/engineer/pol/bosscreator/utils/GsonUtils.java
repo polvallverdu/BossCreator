@@ -1,8 +1,6 @@
 package engineer.pol.bosscreator.utils;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 import java.io.*;
 
@@ -11,7 +9,12 @@ public class GsonUtils {
     public static Gson gson = new Gson();
 
     public static JsonObject jsonFromString(String json) {
-        return JsonParser.parseString(json).getAsJsonObject();
+        try {
+            JsonElement parser = JsonParser.parseString(json);
+            return parser.getAsJsonObject();
+        } catch (JsonParseException | IllegalStateException e) {
+            return new JsonObject();
+        }
     }
 
     public static JsonObject jsonFromFile(File file) throws IOException {
