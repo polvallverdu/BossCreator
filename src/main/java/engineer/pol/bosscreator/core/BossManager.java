@@ -27,9 +27,13 @@ public class BossManager {
     private List<BossTemplate> bossTemplates;
     private List<BossFight> bossFights;
 
+    private boolean knockback;
+
     public BossManager() {
         this.bossTemplates = new ArrayList<>();
         this.bossFights = new ArrayList<>();
+
+        this.knockback = false;
 
         ServerPlayConnectionEvents.JOIN.register(this::onPlayerJoin);
         ServerPlayConnectionEvents.DISCONNECT.register(this::onPlayerQuit);
@@ -89,6 +93,10 @@ public class BossManager {
             BossTemplate template = BossTemplate.fromJson(bossJson.getAsJsonObject());
             this.bossTemplates.add(template);
         });
+        if (!json.has("knockback")) {
+            json.addProperty("knockback", false);
+        }
+        this.knockback = json.get("knockback").getAsBoolean();
     }
 
     public void save() {
@@ -98,6 +106,7 @@ public class BossManager {
             bosses.add(template.toJson());
         });
         json.add("bosses", bosses);
+        json.addProperty("knockback", this.knockback);
         BossCreator.DATA_FILE.save(json);
     }
 
@@ -193,5 +202,11 @@ public class BossManager {
         return this.bossFights.stream().filter(BossFight::isRunning).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
 
+    public boolean isKnockback() {
+        return knockback;
+    }
 
+    public void setKnockback(boolean knockback) {
+        this.knockback = knockback;
+    }
 }

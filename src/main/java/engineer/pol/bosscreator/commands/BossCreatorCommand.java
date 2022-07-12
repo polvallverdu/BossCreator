@@ -1,6 +1,7 @@
 package engineer.pol.bosscreator.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
@@ -39,6 +40,7 @@ public class BossCreatorCommand {
             "§6/bosses finish <bossfightName> §8- §7Stop a bossfight\n" +
             "§6/bosses set <player> <bossfightName> §8- §7Sets a player\n" +
             "§6/bosses unset <player> <bossfightName> §8- §7Unsets a player\n" +
+            "§6/bosses knockback <true/false> §8- §7Enables knokback for bosses\n" +
             "§6/bosses health <bossfightName> <value 0-100%> §8- §7Change boss health";
 
 
@@ -128,6 +130,11 @@ public class BossCreatorCommand {
                                 .suggests(CommandSuggestions.BOSS_FIGHTS)
                                 .then(CommandManager.argument("health", IntegerArgumentType.integer(0, 100))
                                         .executes(BossCreatorCommand::setHealth))));
+
+        literalBuilder
+                .then(CommandManager.literal("setKnockback")
+                        .then(CommandManager.argument("knockback", BoolArgumentType.bool())
+                                        .executes(BossCreatorCommand::setKnockback)));
 
         dispatcher.register(literalBuilder);
     }
@@ -341,14 +348,14 @@ public class BossCreatorCommand {
         ServerPlayerEntity player = EntityArgumentType.getPlayer(context, "playerName");
         BossFight bossFight = BossCreator.BOSS_MANAGER.getBossFight(bossfightName);
         if (bossFight == null) {
-            context.getSource().sendFeedback(Text.literal("Bossfight not found"), false);
+            context.getSource().sendFeedback(Text.literal(prefix + "Bossfight not found"), false);
             return 1;
         }
 
         // TODO: Check it is not a repeated player
 
         bossFight.removeMorpedPlayer(player.getUuid());
-        context.getSource().sendFeedback(Text.literal("Player unset"), false);
+        context.getSource().sendFeedback(Text.literal(prefix + "Player unset"), false);
         return 1;
     }
 
@@ -358,11 +365,20 @@ public class BossCreatorCommand {
         float percentage = (float) health/100;
         BossFight bossFight = BossCreator.BOSS_MANAGER.getBossFight(bossfightName);
         if (bossFight == null) {
-            context.getSource().sendFeedback(Text.literal("Bossfight not found"), false);
+            context.getSource().sendFeedback(Text.literal(prefix + "Bossfight not found"), false);
             return 1;
         }
 
         bossFight.setHP(percentage);
+
+        context.getSource().sendFeedback(Text.literal(prefix + "Updated bar"), false);
+        return 1;
+    }
+
+    private static int setKnockback(CommandContext<ServerCommandSource> context) {
+        BossCreator.BOSS_MANAGER.setKnockback(BoolArgumentType.getBool(context, "knockback"));
+
+        context.getSource().sendFeedback(Text.literal(prefix + (BossCreator.BOSS_MANAGER.isKnockback() ? "§aSet knockback to true" : "§aSet knockback to false")), false);
 
         return 1;
     }
