@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "bosscreator",
+  "version": "${version}",
+  "name": "BossCreator",
+  "description": "",
+  "authors": [
+    "Pol"
+  ],
+  "contact": {
+    "repo": "https://github.com/polvallverdu/BossCreator"
+  },
+  "license": "MIT",
+  "icon": "assets/BossCreator/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "engineer.pol.bosscreator.BossCreator"
+    ]
+  },
+  "mixins": [
+    "BossCreator.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.14.8",
+    "fabric": "*",
+    "minecraft": "1.18.2"
+  }
+}
