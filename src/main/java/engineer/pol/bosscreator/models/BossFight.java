@@ -182,15 +182,17 @@ public class BossFight {
 
     private void disguise(ServerPlayerEntity player) {
         player.changeGameMode(GameMode.SURVIVAL);
-        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName() + " model " + this.template.getMorpherModel());
-        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName() + " texture " + this.template.getMorpherTexture());
-        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName() + " animation " + this.template.getMorpherAnimation());
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " model " + this.template.getMorpherModel());
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " texture " + this.template.getMorpherTexture());
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " animation " + this.template.getMorpherAnimation());
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " enable");
     }
 
     private void undisguise(ServerPlayerEntity player) {
         player.changeGameMode(GameMode.SPECTATOR);
-        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName() + " model models/player.geo.json");
-        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName() + " texture reset");
-        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName() + " animation animations/player.animation.json");
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " disable");
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " model models/player.geo.json");
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " texture reset");
+        BossCreator.SERVER.getCommandManager().execute(BossCreator.SERVER.getCommandSource(), "morpher " + player.getName().getString() + " animation animations/player.animation.json");
     }
 }

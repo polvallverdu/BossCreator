@@ -20,6 +20,7 @@ import net.minecraft.util.ActionResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class BossManager {
 
@@ -49,14 +50,18 @@ public class BossManager {
     }
 
     private ActionResult onDamage(LivingEntity receiver, EntityDamageSource source, float amount) {
+        AtomicReference<ActionResult> result = new AtomicReference<>(ActionResult.PASS);
+
         if (receiver instanceof ServerPlayerEntity) {
             ServerPlayerEntity player = (ServerPlayerEntity) receiver;
 
             this.getActiveBossFights().stream()
                     .filter(fight -> fight.getMorphedPlayers().contains(player.getUuid()))
                     .findFirst()
-                    .ifPresent(fight -> fight.onDamage((int) amount));
-            return ActionResult.FAIL;
+                    .ifPresent(fight -> {
+                        fight.onDamage((int) amount);
+                        result.set(ActionResult.FAIL);
+                    });
         }
 
         if (source.getAttacker() instanceof ServerPlayerEntity) { // If the attacker is the boss, apply damage to received
@@ -65,12 +70,14 @@ public class BossManager {
             this.getActiveBossFights().stream()
                     .filter(fight -> fight.getMorphedPlayers().contains(player.getUuid()))
                     .findFirst()
-                    .ifPresent(fight -> receiver.damage(new BossDamageSource(), (float) fight.getTemplate().getMeleeDamage()));
+                    .ifPresent(fight -> {
+                        receiver.damage(new BossDamageSource(), (float) fight.getTemplate().getMeleeDamage());
+                        result.set(ActionResult.FAIL);
+                    });
 
-            return ActionResult.FAIL;
         }
 
-        return ActionResult.PASS;
+        return result.get();
     }
 
     private void load() {
@@ -135,6 +142,10 @@ public class BossManager {
     }
 
     public BossFight createBossFight(String name, BossTemplate bossTemplate) {
+        // Check if bossfight with name already exists
+        if (this.getBossFight(name) != null) {
+            throw new RuntimeException("Boss fight with name '" + name + "' already exists.");
+        }
         BossFight bossFight = new BossFight(name, bossTemplate);
         this.bossFights.add(bossFight);
         return bossFight;
