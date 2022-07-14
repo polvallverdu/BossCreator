@@ -12,16 +12,16 @@ public class DataFile {
     private final File dir;
     private final File file;
 
-    public DataFile() {
+    public DataFile(String fileName) {
         this.dir = new File("./config/bosscreator");
-        this.file = new File("./config/bosscreator/data.json");
+        this.file = new File("./config/bosscreator/" + fileName + ".json");
 
         this.dir.mkdirs();
         try {
             this.file.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Failed to create data.json file");
+            System.out.println("Failed to create " + fileName + ".json file");
         }
     }
 

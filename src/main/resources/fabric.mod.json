@@ -15,7 +15,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "engineer.pol.bosscreator.BossCreator"
+      "engineer.pol.bosscreator.FightCreator"
     ]
   },
   "mixins": [

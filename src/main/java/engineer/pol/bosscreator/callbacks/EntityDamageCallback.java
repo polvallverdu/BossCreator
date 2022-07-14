@@ -5,22 +5,23 @@ import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Pair;
 
 public interface EntityDamageCallback {
 
     Event<EntityDamageCallback> EVENT = EventFactory.createArrayBacked(EntityDamageCallback.class,
         (listeners) -> (receiver, source, amount) -> {
             for (EntityDamageCallback listener : listeners) {
-                ActionResult result = listener.onDamage(receiver, source, amount);
+                Pair<ActionResult, Float> result = listener.onDamage(receiver, source, amount);
 
-                if (result != ActionResult.PASS) {
+                if (result.getLeft() != ActionResult.PASS) {
                     return result;
                 }
             }
-            return ActionResult.PASS;
+            return new Pair<>(ActionResult.PASS, amount);
         });
 
-    ActionResult onDamage(LivingEntity receiver, EntityDamageSource source, float amount);
+    Pair<ActionResult, Float> onDamage(LivingEntity receiver, EntityDamageSource source, float amount);
 
 
 }
