@@ -347,18 +347,18 @@ public class FightCommand {
 
     private static int finish(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         String fightName = StringArgumentType.getString(context, "fightName");
-        BossFight bossFight = FightCreator.FIGHT_MANAGER.getBossFight(fightName);
-        if (bossFight == null) {
-            context.getSource().sendFeedback(Text.literal(PREFIX + "Bossfight not found"), false);
+        Fight fight = FightCreator.FIGHT_MANAGER.getFight(fightName);
+        if (fight == null) {
+            context.getSource().sendFeedback(Text.literal(PREFIX + "Fight not found"), false);
             return 1;
         }
 
-        if (!bossFight.isRunning()) {
-            context.getSource().sendFeedback(Text.literal(PREFIX + "Boss fight is not running"), false);
+        if (!fight.isRunning()) {
+            context.getSource().sendFeedback(Text.literal(PREFIX + "Fight is not running"), false);
             return 1;
         }
-        bossFight.stop(true);
-        context.getSource().sendFeedback(Text.literal(PREFIX + "Boss finished"), false);
+        fight.stop(true);
+        context.getSource().sendFeedback(Text.literal(PREFIX + "Fight finished"), false);
         return 1;
     }
 
@@ -392,6 +392,8 @@ public class FightCommand {
 
         if (fight instanceof BossFight) {
             ((BossFight) fight).removeMorphedPlayer(player.getUuid());
+        } else if (fight instanceof PlayerFight) {
+            ((PlayerFight) fight).setPlayer(null);
         }
 
         context.getSource().sendFeedback(Text.literal(PREFIX + "Player unset"), false);
