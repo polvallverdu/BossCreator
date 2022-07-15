@@ -8,6 +8,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import engineer.pol.bosscreator.FightCreator;
+import engineer.pol.bosscreator.core.FightManager;
 import engineer.pol.bosscreator.models.BossFight;
 import engineer.pol.bosscreator.models.Fight;
 import engineer.pol.bosscreator.models.FightConfig;
@@ -268,6 +269,15 @@ public class FightCommand {
         }
 
         fightConfig.setMaxHealth(maxHealth);
+
+        FightCreator.FIGHT_MANAGER.getActiveFights().stream().filter(f -> f.getConfig() == fightConfig).forEach(f -> {
+            if (f instanceof BossFight) {
+                ((BossFight) f).resetHealth();
+            } else if (f instanceof PlayerFight) {
+                ((PlayerFight) f).resetHealth();
+            }
+        });
+
         context.getSource().sendFeedback(Text.literal(PREFIX + "Max health updated"), false);
         save();
         return 1;
@@ -455,6 +465,9 @@ public class FightCommand {
         boolean block = BoolArgumentType.getBool(context, "value");
 
         FightCreator.FIGHT_MANAGER.setBlocked(block);
+        if (!block) {
+            FightCreator.FIGHT_MANAGER.setBlockEnabled(false);
+        }
 
         context.getSource().sendFeedback(Text.literal(PREFIX + (block ? "§aSet block to true" : "§aSet block to false")), false);
         return 1;

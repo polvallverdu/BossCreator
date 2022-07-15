@@ -17,9 +17,13 @@ public class BossFight extends Fight {
 
     public BossFight(String name, FightConfig config) {
         super(name, config, FightType.BOSSFIGHT);
-        this.health = config.getMaxHealth();
+        this.resetHealth();
         this.morphedPlayers = new ArrayList<>();
         this.toRemovePlayers = new ArrayList<>();
+    }
+
+    public void resetHealth() {
+        this.health = getConfig().getMaxHealth();
     }
 
     @Override
@@ -123,7 +127,7 @@ public class BossFight extends Fight {
         this.health -= damage;
         this.update();
         if (this.isDead()) {
-            this.health = this.getConfig().getMaxHealth();
+            resetHealth();
             FightCreator.CMD_MANAGER.runCommands(CmdCases.BOSSFIGHT_BOSS_KILL, this.getMorphedPlayersEntity(), "boss", this.getConfig().getName());
             this.stop(false);
         }
