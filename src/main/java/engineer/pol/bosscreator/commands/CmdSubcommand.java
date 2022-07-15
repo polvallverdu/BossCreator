@@ -30,7 +30,7 @@ public class CmdSubcommand {
         StringBuilder message = new StringBuilder(FightCommand.PREFIX).append("§7").append(cmdCase.name()).append(" commands: ");
         List<String> commands = FightCreator.CMD_MANAGER.getCommands(cmdCase);
         for (int i = 0; i < commands.size(); i++) {
-            message.append("§f§l(").append(i).append(") §f").append(commands.get(i).replaceAll("\\{", "§3§l{").replaceAll("}", "}§r")).append(" \n");
+            message.append("\n§f§l(").append(i).append(") §f").append(commands.get(i).replaceAll("\\{", "§3§l{").replaceAll("}", "}§r"));
         }
         context.getSource().sendFeedback(Text.literal(message.toString()), false);
         return 1;
