@@ -1,24 +1,18 @@
 package engineer.pol.bosscreator.mixin;
 
 
-import engineer.pol.bosscreator.FightCreator;
-import engineer.pol.bosscreator.models.BossFight;
-import engineer.pol.bosscreator.models.FightType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 @Mixin(LivingEntity.class)
-public abstract class DamageKnockbackMixin extends Entity {
+public abstract class LivingEntityMixin extends Entity {
 
-    public DamageKnockbackMixin(EntityType<?> type, World world) {
+    public LivingEntityMixin(EntityType<?> type, World world) {
         super(type, world);
     }
 
@@ -45,6 +39,11 @@ public abstract class DamageKnockbackMixin extends Entity {
 
         return newValue.get();
     }*/
+
+    @ModifyConstant(method = "applyDamage", constant = @Constant(floatValue = 0.0f, ordinal = 2))
+    private float bypassZeroAmountCheck(float constant) {
+        return -99f;
+    }
 
 
 }

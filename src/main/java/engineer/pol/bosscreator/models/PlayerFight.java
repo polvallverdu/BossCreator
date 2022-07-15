@@ -5,6 +5,7 @@ import engineer.pol.bosscreator.utils.cmds.CmdCases;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerFight extends Fight {
 
@@ -26,6 +27,10 @@ public class PlayerFight extends Fight {
     public void setHP(float hp) {
         this.health = (int) (this.getConfig().getMaxHealth() * hp);
         this.update();
+    }
+
+    public boolean isDead() {
+        return this.health <= 0;
     }
 
     @Override
@@ -58,6 +63,10 @@ public class PlayerFight extends Fight {
 
         this.health -= damage;
         this.update();
+        if (this.isDead()) {
+            this.health = this.getConfig().getMaxHealth();
+            this.stop(false);
+        }
 
         return true;
     }

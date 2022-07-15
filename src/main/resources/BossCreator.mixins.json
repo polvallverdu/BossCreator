@@ -4,8 +4,9 @@
   "package": "engineer.pol.bosscreator.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "DamageKnockbackMixin",
-    "PlayerReceiveDamageMixin"
+    "LivingEntityMixin",
+    "ServerPlayerEntityMixin",
+    "PlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

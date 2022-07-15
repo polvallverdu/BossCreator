@@ -10,9 +10,9 @@ import net.minecraft.util.Pair;
 public interface EntityDamageCallback {
 
     Event<EntityDamageCallback> EVENT = EventFactory.createArrayBacked(EntityDamageCallback.class,
-        (listeners) -> (receiver, source, amount) -> {
+        (listeners) -> (receiver, source, amount, calculatedDamage) -> {
             for (EntityDamageCallback listener : listeners) {
-                Pair<ActionResult, Float> result = listener.onDamage(receiver, source, amount);
+                Pair<ActionResult, Float> result = listener.onDamage(receiver, source, amount, calculatedDamage);
 
                 if (result.getLeft() != ActionResult.PASS) {
                     return result;
@@ -21,7 +21,7 @@ public interface EntityDamageCallback {
             return new Pair<>(ActionResult.PASS, amount);
         });
 
-    Pair<ActionResult, Float> onDamage(LivingEntity receiver, EntityDamageSource source, float amount);
+    Pair<ActionResult, Float> onDamage(LivingEntity receiver, EntityDamageSource source, float amount, float calculatedDamage);
 
 
 }

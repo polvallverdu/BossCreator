@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.EntityDamageSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -70,19 +71,30 @@ public class FightManager {
                 .ifPresent(fight -> FightCreator.CMD_MANAGER.runCommands(CmdCases.BOSSFIGHT_BOSS_KILL, fight.getMorphedPlayersEntity(), "player", killedEntity.getName().getString() ,"boss", fight.getConfig().getName()));
     }
 
-    private Pair<ActionResult, Float> onDamage(LivingEntity receiver, EntityDamageSource source, float amount) {
+    private Pair<ActionResult, Float> onDamage(LivingEntity receiver, EntityDamageSource source, float amount, float calculatedDamage) {
         AtomicReference<ActionResult> result = new AtomicReference<>(ActionResult.PASS);
         AtomicReference<Float> damage = new AtomicReference<>(amount);
 
         if (receiver instanceof ServerPlayerEntity) {
             ServerPlayerEntity player = (ServerPlayerEntity) receiver;
 
-            this.getActiveFights(FightType.BOSSFIGHT).stream().map(f -> (BossFight) f)
+            List<Fight> activeFights = this.getActiveFights();
+
+            activeFights.stream().filter(f -> f instanceof BossFight).map(f -> (BossFight) f)
                     .filter(fight -> fight.getMorphedPlayers().contains(player.getUuid()))
                     .findFirst()
                     .ifPresent(fight -> {
                         fight.onDamage((int) amount);
-                        damage.set(0.1f);
+                        damage.set(0f);
+                        result.set(ActionResult.SUCCESS);
+                    });
+
+            activeFights.stream().filter(f -> f instanceof PlayerFight).map(f -> (PlayerFight) f)
+                    .filter(f -> f.getPlayer() != null && f.getPlayer().getUuid().equals(player.getUuid()))
+                    .findFirst()
+                    .ifPresent(f -> {
+                        f.onDamage((int) getDamage(source, calculatedDamage, f));
+                        damage.set(0f);
                         result.set(ActionResult.SUCCESS);
                     });
         }
@@ -90,22 +102,15 @@ public class FightManager {
         if (source.getAttacker() instanceof ServerPlayerEntity) { // If the attacker is the boss, apply damage to received
             ServerPlayerEntity player = (ServerPlayerEntity) source.getAttacker();
 
-            List<Fight> activeFights = this.getActiveFights(null);
+            List<Fight> activeFights = this.getActiveFights();
 
             activeFights.stream().filter(f -> f instanceof BossFight).map(f -> (BossFight) f)
                 .filter(fight -> fight.getMorphedPlayers().contains(player.getUuid()))
                 .findFirst()
                 .ifPresent(fight -> {
-                    damage.set(source.isProjectile() ? (float) fight.getConfig().getProjectileDamage() : (float) fight.getConfig().getMeleeDamage());
+                    damage.set(getDamage(source, calculatedDamage, fight));
                     result.set(ActionResult.SUCCESS);
                 });
-
-            activeFights.stream().filter(f -> f instanceof PlayerFight).map(f -> (PlayerFight) f)
-                    .filter(f -> f.getPlayer() != null && f.getPlayer().getUuid().equals(player.getUuid()))
-                    .findFirst()
-                    .ifPresent(f -> {
-                        f.onDamage((int) amount);
-                    });
         }
 
         if (damage.get() == -1f) {
@@ -113,6 +118,20 @@ public class FightManager {
         }
 
         return new Pair<>(result.get(), damage.get());
+    }
+
+    private float getDamage(EntityDamageSource source, float calculatedAmount, Fight fight) {
+        float damage = -1f;
+        if (source.isProjectile()) {
+            damage = (float) fight.getConfig().getProjectileDamage();
+        } else {
+            damage = (float) fight.getConfig().getMeleeDamage();
+        }
+        if (damage < 0) {
+            damage = calculatedAmount;
+        }
+
+        return damage;
     }
 
     private void load() {
@@ -261,6 +280,10 @@ public class FightManager {
 
     public List<Fight> getFights(FightType filter) {
         return fights.stream().filter(fight -> fight.getType() == filter).collect(Collectors.toList());
+    }
+
+    public List<Fight> getActiveFights() {
+        return this.getActiveFights(null);
     }
 
     public List<Fight> getActiveFights(@Nullable FightType filter) {
