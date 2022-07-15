@@ -17,7 +17,7 @@ public class PlayerFight extends Fight {
         this.resetHealth();
     }
 
-    private void resetHealth() {
+    public void resetHealth() {
         this.health = this.getConfig().getMaxHealth();
     }
 
@@ -79,7 +79,7 @@ public class PlayerFight extends Fight {
 
     @Override
     public String getBossbarName() {
-        return player == null ? "" : player.getName().getString();
+        return this.getConfig().getDisplayName().replaceAll("\\{player}", this.player == null ? "" : player.getName().getString());
     }
 
     public ServerPlayerEntity getPlayer() {
