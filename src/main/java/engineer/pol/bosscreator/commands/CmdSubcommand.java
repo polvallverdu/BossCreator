@@ -19,6 +19,7 @@ public class CmdSubcommand {
         for (CmdCases cmdCase : CmdCases.values()) {
             builder.then(CommandManager.literal(cmdCase.name())
                     .then(CommandManager.literal("list").executes(context -> list(context, cmdCase)))
+                    .then(CommandManager.literal("empty").executes(context -> empty(context, cmdCase)))
                     .then(CommandManager.literal("add").then(CommandManager.argument("command", StringArgumentType.greedyString()).executes(context -> add(context, cmdCase))))
                     .then(CommandManager.literal("remove").then(CommandManager.argument("index", IntegerArgumentType.integer(0)).executes(context -> remove(context, cmdCase))))
                     .then(CommandManager.literal("edit").then(CommandManager.argument("index", IntegerArgumentType.integer(0)).then(CommandManager.argument("command", StringArgumentType.greedyString()).executes(context -> edit(context, cmdCase)))))
@@ -80,6 +81,17 @@ public class CmdSubcommand {
         FightCreator.CMD_MANAGER.save();
 
         context.getSource().sendFeedback(Text.literal(FightCommand.PREFIX + "§f" + cmdCase.name() + " command edited"), false);
+        return 1;
+    }
+
+    private static int empty(CommandContext<ServerCommandSource> context, CmdCases cmdCase) throws CommandSyntaxException {
+        List<String> commands = FightCreator.CMD_MANAGER.getCommands(cmdCase);
+
+        commands.clear();
+
+        FightCreator.CMD_MANAGER.save();
+
+        context.getSource().sendFeedback(Text.literal(FightCommand.PREFIX + "§f" + cmdCase.name() + " case emptied"), false);
         return 1;
     }
 
