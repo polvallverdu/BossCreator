@@ -128,7 +128,7 @@ public class BossFight extends Fight {
 
         this.update();
         if (this.isDead()) {
-            resetHealth();
+            //resetHealth();
             FightCreator.CMD_MANAGER.runCommands(CmdCases.BOSSFIGHT_BOSS_KILL, this.getMorphedPlayersEntity(), "boss", this.getConfig().getName());
             //this.stop(false);
             FightCreator.CMD_MANAGER.runCommands(CmdCases.FINISH_BOSSFIGHT, this.getMorphedPlayersEntity(), "boss", this.getConfig().getName());

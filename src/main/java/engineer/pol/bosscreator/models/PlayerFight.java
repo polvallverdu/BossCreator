@@ -70,7 +70,7 @@ public class PlayerFight extends Fight {
 
         this.update();
         if (this.isDead()) {
-            this.health = this.getConfig().getMaxHealth();
+            //this.resetHealth();
             //this.stop(false);
             FightCreator.CMD_MANAGER.runCommands(CmdCases.FINISH_PLAYERFIGHT, new ArrayList<>(), "player", this.player.getName().toString());
         }
