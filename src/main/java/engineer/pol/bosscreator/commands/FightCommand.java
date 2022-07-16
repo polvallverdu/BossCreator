@@ -51,7 +51,7 @@ public class FightCommand {
 
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
-        LiteralArgumentBuilder<ServerCommandSource> literalBuilder = CommandManager.literal("fight");
+        LiteralArgumentBuilder<ServerCommandSource> literalBuilder = CommandManager.literal("fight").requires(source -> source.hasPermissionLevel(2));
 
         literalBuilder.executes(FightCommand::help);
         literalBuilder.then(CommandManager.literal("help").executes(FightCommand::help));
