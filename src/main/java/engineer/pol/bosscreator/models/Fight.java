@@ -106,10 +106,14 @@ public abstract class Fight {
 
     public abstract String getBossbarName();
 
+    private String getReplacedBossbarName() {
+        return this.getBossbarName().replace("\\{fight}", this.getName());
+    }
+
     protected void update() {
         if (this.bossBar == null) return;
         this.bossBar.setColor(this.config.getColor());
-        this.bossBar.setName(Text.literal(this.getBossbarName()));
+        this.bossBar.setName(Text.literal(this.getReplacedBossbarName()));
 
         int healthPoints = this.getHealthPoints();
         if (healthPoints < 0) {
