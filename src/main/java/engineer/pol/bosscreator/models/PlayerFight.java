@@ -34,6 +34,11 @@ public class PlayerFight extends Fight {
     }
 
     @Override
+    public boolean hasReachedBlockPercentage() {
+        return this.getHealthPoints() <= FightCreator.FIGHT_MANAGER.getBlockPercentage();
+    }
+
+    @Override
     public boolean start() {
         if (this.player == null) return false;
         if (!super.start()) return false;
@@ -59,13 +64,15 @@ public class PlayerFight extends Fight {
 
     @Override
     public boolean onDamage(int damage) {
-        if (!super.onDamage(damage)) return false;
+        if (!super.onDamage(damage) || this.health <= 0) return false;
 
-        this.health -= damage;
+        this.health = Math.max(0, this.health - damage);
+
         this.update();
         if (this.isDead()) {
             this.health = this.getConfig().getMaxHealth();
-            this.stop(false);
+            //this.stop(false);
+            FightCreator.CMD_MANAGER.runCommands(CmdCases.FINISH_PLAYERFIGHT, new ArrayList<>(), "player", this.player.getName().toString());
         }
 
         return true;

@@ -122,14 +122,16 @@ public class BossFight extends Fight {
 
     @Override
     public boolean onDamage(int damage) {
-        if (!super.onDamage(damage)) return false;
+        if (!super.onDamage(damage) || this.health <= 0) return false;
 
-        this.health -= damage;
+        this.health = Math.max(0, this.health - damage);
+
         this.update();
         if (this.isDead()) {
             resetHealth();
             FightCreator.CMD_MANAGER.runCommands(CmdCases.BOSSFIGHT_BOSS_KILL, this.getMorphedPlayersEntity(), "boss", this.getConfig().getName());
-            this.stop(false);
+            //this.stop(false);
+            FightCreator.CMD_MANAGER.runCommands(CmdCases.FINISH_BOSSFIGHT, this.getMorphedPlayersEntity(), "boss", this.getConfig().getName());
         }
 
         return true;
