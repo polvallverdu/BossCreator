@@ -89,7 +89,7 @@ public abstract class Fight {
         createBossbar();
         update();
 
-        FightCreator.CMD_MANAGER.runCommands(CmdCases.START, new ArrayList<>());
+        FightCreator.CMD_MANAGER.runCommands(CmdCases.START, new ArrayList<>(), "fight", this.getName());
 
         return true;
     }
@@ -99,7 +99,7 @@ public abstract class Fight {
         this.running = false;
 
         destroyBossbar();
-        FightCreator.CMD_MANAGER.runCommands(force ? CmdCases.FORCE_FINISH : CmdCases.FINISH, new ArrayList<>());
+        FightCreator.CMD_MANAGER.runCommands(force ? CmdCases.FORCE_FINISH : CmdCases.FINISH, new ArrayList<>(), "fight", this.getName());
 
         return true;
     }
